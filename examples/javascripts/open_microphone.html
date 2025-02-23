@@ -1,0 +1,14 @@
+<script>
+    const openMediaDevices = async (constraints) => {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    try {
+        const stream = openMediaDevices({'audio': true});
+        console.log('Got MediaStream:', stream);
+    } catch(error) {
+        console.error('Error accessing media devices.', error);
+    }
+</script>
+
+// https://geoboy.tistory.com/27

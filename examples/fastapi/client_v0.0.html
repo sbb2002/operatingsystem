@@ -1,0 +1,57 @@
+// 클라이언트 측: 브라우저 기반 녹음 및 FastAPI 서버로 업로드
+// index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio Recorder</title>
+</head>
+<body>
+  <h2>Audio Recorder</h2>
+  <button id="recordBtn">Start Recording</button>
+  <button id="stopBtn" disabled>Stop Recording</button>
+  <audio id="audioPlayback" controls></audio>
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const audioPlayback = document.getElementById('audioPlayback');
+
+    recordBtn.addEventListener('click', async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      
+      mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        audioPlayback.src = URL.createObjectURL(audioBlob);
+        
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.wav');
+        
+        const response = await fetch('http://<SERVER_IP>:8000/upload/', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+        alert(`Server Response: ${result.message}`);
+      };
+
+      audioChunks = [];
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+    });
+
+    stopBtn.addEventListener('click', () => {
+      mediaRecorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
