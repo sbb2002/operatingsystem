@@ -247,6 +247,20 @@ if (navigator.mediaDevices.getUserMedia) {
       audio.src = audioURL;
       console.log("recorder stopped");
 
+      // Generate Form-data
+      const formData = new FormData();
+      formData.append("file", blob, "recording.ogg");
+      
+      // Send to server
+      const serverURL = window.location.origin;
+      fetch(`${serverURL}/upload`, {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => console.log("Server Response: ", data))
+      .catch(error => console.error("Error: ", error))
+
       deleteButton.onclick = function(e) {
         let evtTgt = e.target;
         evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
