@@ -15,6 +15,9 @@ const canvasCtx = canvas.getContext("2d");
 let mediaRecorder = null;
 let chunks = [];
 
+// 녹음파일 이름 기본값
+let clipDefaultName;
+
 if (navigator.mediaDevices.getUserMedia) {
   console.log("getUserMedia supported.");
 
@@ -140,9 +143,29 @@ function visualize(stream) {
   draw();
 }
 
+// Wav-timestamp
+function timestampOgg() {
+  // cilpDefaultName = `rec_${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}.ogg`;
+  const getFormattedTimestamp = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    return `rec_${year}${month}${day}${hours}${minutes}${seconds}.ogg`;
+  };
+
+  return getFormattedTimestamp();
+}
+
+
 // 🛠 오디오 클립 생성 함수
 function createAudioClip(audioURL, blob) {
-  const clipName = prompt("Enter a name for your sound clip?", "My unnamed clip");
+  clipDefaultName = timestampOgg();
+  // const defaultFileName = clipName;
+  const clipName = prompt("Enter a name for your sound clip?", clipDefaultName);
 
   const clipContainer = document.createElement("article");
   const clipLabel = document.createElement("p");
@@ -154,7 +177,7 @@ function createAudioClip(audioURL, blob) {
   deleteButton.textContent = "Delete";
   deleteButton.className = "delete";
 
-  clipLabel.textContent = clipName || "My unnamed clip";
+  clipLabel.textContent = clipName;
 
   clipContainer.appendChild(audio);
   clipContainer.appendChild(clipLabel);
@@ -180,7 +203,7 @@ function createAudioClip(audioURL, blob) {
 async function uploadAudio(audioBlob) {
   try {
     const formData = new FormData();
-    formData.append("file", audioBlob, "recording.ogg");
+    formData.append("file", audioBlob, clipDefaultName);
 
     const serverURL = window.location.origin;
     const response = await fetch(`${serverURL}/upload`, {
