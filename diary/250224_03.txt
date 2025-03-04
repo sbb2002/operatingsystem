@@ -1,0 +1,12 @@
+// In-progress
+* 서버 측으로 녹음된 소리를 전달하는 기능
+* GitHub에 연결(버전관리가 파일이름 바꿔하는 것도 슬슬 귀찮음.)
+
+// Completed
+* 클라이언트(aka 폰) 측에서 브라우저로 접근만 하면 그 폰에서의 마이크로 녹음하는 기능 구현
+* GitHub를 통해 버전관리
+    - https://github.com/sbb2002/operatingsystem/tree/v1.0
+    - main은 놔두고, v1.0부터 관리시작.
+
+// Next step
+* v1.0 - 서버 측에 녹음소리 전달기능 구현.

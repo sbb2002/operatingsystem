@@ -1,4 +1,4 @@
 *.wav
-diary
 *.pem
+*.xml
 config.json
