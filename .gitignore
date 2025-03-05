@@ -2,3 +2,4 @@
 *.pem
 *.xml
 config.json
+examples/LLM/llama.cpp

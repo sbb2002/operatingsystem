@@ -3,7 +3,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
-import shutil
+import whisper
+import torch
+import huggingface_hub
+from transformers import pipeline
 
 TEMPLATES_PATH = r'D:\PythonWorkspace\operator_kayoko\examples\fastapi\web-dictaphone'
 UPLOAD_FOLDER = os.path.join(TEMPLATES_PATH, "uploads")
@@ -34,10 +37,36 @@ def main(request: Request):
 @app.post("/upload")
 async def upload_audio(file: UploadFile = File(...)):  # 🔹 multipart/form-data 형식 받도록 설정
     
+    ## Taking OGG files from the client
     file_location = os.path.join(UPLOAD_FOLDER, file.filename)
 
     with open(file_location, "wb") as buffer:
         buffer.write(await file.read())  # 🔹 await 사용해서 비동기 읽기
+        
+    ## STT process
+    model_whisper = whisper.load_model('tiny')
+    stt_result = model_whisper.transcribe(file_location)['text']
+    # print(stt_result['text'])
+    
+    ## LLM Process
+    torch.cuda.empty_cache()
+    model_llm = "meta-llama/Llama-3.2-1B-Instruct"
+    pipe_llm = pipeline(
+        'text-generation',
+        model=model_llm,
+        torch_dtype=torch.float16,
+        device_map="auto",
+    )
+    messages = [
+        {"role": "system", "content": "You are a special agent for helping me. You should answer shortly."},
+        {"role": "user", "content": stt_result},
+    ]
+    llm_result = pipe_llm(
+        messages,
+        max_new_tokens=256,
+    )[0]["generated_text"][-1]['content']
+    
+    print("Q)\n", stt_result, "\n\nA)\n", llm_result)
     
     return {"message": "File uploaded successfully", "filename": file.filename}
 
